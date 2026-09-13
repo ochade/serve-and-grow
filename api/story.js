@@ -8,8 +8,8 @@ const el = (type, props, ...children) => ({
   props: { ...props, children: children.length === 1 ? children[0] : children },
 });
 
-export default function handler(req) {
-  const searchParams = new URL('http://x' + req.url).searchParams;
+export function GET(req) {
+  const { searchParams } = new URL(req.url);
   const title = searchParams.get('title') || 'Episode title';
   const guest = searchParams.get('guest') || '';
   const thumb = searchParams.get('thumb') || '';
