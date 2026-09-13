@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@vercel/og": "^0.6.2"
+    "@vercel/og": "^0.6.2",
+    "sharp": "^0.33.5"
   }
 }

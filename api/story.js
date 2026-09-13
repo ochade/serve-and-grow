@@ -1,14 +1,14 @@
 import { ImageResponse } from '@vercel/og';
+import sharp from 'sharp';
 
 export const config = { runtime: 'nodejs' };
 
-// helper to reduce noise: makes a element object
 const el = (type, props, ...children) => ({
   type,
   props: { ...props, children: children.length === 1 ? children[0] : children },
 });
 
-export function GET(req) {
+export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const title = searchParams.get('title') || 'Episode title';
   const guest = searchParams.get('guest') || '';
@@ -35,7 +35,6 @@ export function GET(req) {
     el('div', { style: { marginTop: 110, fontSize: 34, letterSpacing: 14, color: GOLD, fontWeight: 700, display: 'flex' } }, 'SERVE & GROW'),
     el('div', { style: { marginTop: 12, fontSize: 20, letterSpacing: 10, color: MUTED, display: 'flex' } }, 'P O D C A S T'),
     el('div', { style: { marginTop: 40, fontSize: 22, letterSpacing: 6, color: GOLD, display: 'flex' } }, '— NEW EPISODE —'),
-    // thumbnail frame
     el(
       'div',
       {
@@ -57,7 +56,6 @@ export function GET(req) {
           : el('div', { style: { display: 'flex' } }, '')
       )
     ),
-    // title
     el(
       'div',
       {
@@ -68,13 +66,10 @@ export function GET(req) {
       },
       title
     ),
-    // guest
     guest
       ? el('div', { style: { marginTop: 30, fontSize: 36, fontStyle: 'italic', color: GOLD, display: 'flex' } }, guest)
       : el('div', { style: { display: 'flex' } }, ''),
-    // now streaming
     el('div', { style: { marginTop: 50, fontSize: 30, color: '#b8cbc8', display: 'flex' } }, 'Now streaming on YouTube'),
-    // link in bio button
     el(
       'div',
       {
@@ -86,9 +81,21 @@ export function GET(req) {
       },
       'LINK IN BIO'
     ),
-    // handle
     el('div', { style: { marginTop: 'auto', marginBottom: 90, fontSize: 26, letterSpacing: 3, color: MUTED, display: 'flex' } }, '@serveandgrowpodcast')
   );
 
-  return new ImageResponse(tree, { width: 1080, height: 1920 });
+  // Render to PNG via @vercel/og
+  const pngResponse = new ImageResponse(tree, { width: 1080, height: 1920 });
+  const pngBuffer = Buffer.from(await pngResponse.arrayBuffer());
+
+  // Convert PNG -> JPEG for Instagram
+  const jpegBuffer = await sharp(pngBuffer).jpeg({ quality: 90 }).toBuffer();
+
+  return new Response(jpegBuffer, {
+    status: 200,
+    headers: {
+      'Content-Type': 'image/jpeg',
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    },
+  });
 }
