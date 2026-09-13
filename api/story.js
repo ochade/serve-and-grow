@@ -9,7 +9,7 @@ const el = (type, props, ...children) => ({
 });
 
 export default function handler(req) {
-  const { searchParams } = new URL(req.url);
+  const searchParams = new URL('http://x' + req.url).searchParams;
   const title = searchParams.get('title') || 'Episode title';
   const guest = searchParams.get('guest') || '';
   const thumb = searchParams.get('thumb') || '';
