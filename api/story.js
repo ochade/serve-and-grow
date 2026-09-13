@@ -1,5 +1,6 @@
 import { ImageResponse } from '@vercel/og';
-import sharp from 'sharp';
+import { PNG } from 'pngjs';
+import jpeg from 'jpeg-js';
 
 export const config = { runtime: 'nodejs' };
 
@@ -84,14 +85,17 @@ export async function GET(req) {
     el('div', { style: { marginTop: 'auto', marginBottom: 90, fontSize: 26, letterSpacing: 3, color: MUTED, display: 'flex' } }, '@serveandgrowpodcast')
   );
 
-  // Render to PNG via @vercel/og
+  // 1. Render to PNG via @vercel/og
   const pngResponse = new ImageResponse(tree, { width: 1080, height: 1920 });
   const pngBuffer = Buffer.from(await pngResponse.arrayBuffer());
 
-  // Convert PNG -> JPEG for Instagram
-  const jpegBuffer = await sharp(pngBuffer).jpeg({ quality: 90 }).toBuffer();
+  // 2. Decode PNG to raw pixels (pure JS, no native binaries)
+  const png = PNG.sync.read(pngBuffer);
 
-  return new Response(jpegBuffer, {
+  // 3. Encode raw pixels to JPEG (pure JS)
+  const jpegData = jpeg.encode({ data: png.data, width: png.width, height: png.height }, 90);
+
+  return new Response(jpegData.data, {
     status: 200,
     headers: {
       'Content-Type': 'image/jpeg',
