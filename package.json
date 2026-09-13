@@ -5,9 +5,7 @@
   "type": "module",
   "dependencies": {
     "@vercel/og": "^0.6.2",
-    "sharp": "^0.33.5"
-  },
-  "scripts": {
-    "vercel-build": "npm rebuild sharp"
+    "pngjs": "^7.0.0",
+    "jpeg-js": "^0.4.4"
   }
 }
